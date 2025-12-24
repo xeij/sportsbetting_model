@@ -133,6 +133,5 @@ def load_live_odds_for_prediction(config_path: str = "config.yaml"):
     live_fixtures = add_odds_features(live_fixtures, 'B365')
     
     print_progress(f"Prepared {len(live_fixtures)} live fixtures for prediction")
-    print_progress(f"Columns with B365: {[c for c in live_fixtures.columns if 'B365' in c]}")
     
     return live_fixtures

@@ -111,9 +111,9 @@ prediction:
   
   # Bookmakers to use for odds (in order of preference)
   bookmakers:
-    - "Pinnacle"  # PS prefix
-    - "Bet365"    # B365 prefix
-    - "Average"   # Avg prefix
+    - "PS"     # Pinnacle
+    - "B365"   # Bet365
+    - "Avg"    # Average
 
 # Visualization settings
 visualization:
