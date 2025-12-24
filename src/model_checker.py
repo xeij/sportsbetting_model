@@ -21,7 +21,7 @@ def check_model_freshness(config_path: str = "config.yaml") -> dict:
     
     # Paths
     features_path = config['data']['processed_data_path'].replace('.csv', '_features.csv')
-    model_dir = Path(config['models']['save_dir'])
+    model_dir = Path(config['models']['model_save_dir'])
     
     result = {
         'models_exist': False,
@@ -77,7 +77,7 @@ def get_model_info(model_name: str = "xgboost_model", config_path: str = "config
     from .utils import load_config
     
     config = load_config(config_path)
-    model_dir = Path(config['models']['save_dir'])
+    model_dir = Path(config['models']['model_save_dir'])
     model_path = model_dir / f"{model_name}.joblib"
     
     if not model_path.exists():

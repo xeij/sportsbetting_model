@@ -58,3 +58,6 @@ Thumbs.db
 .pytest_cache/
 .coverage
 htmlcov/
+
+# API Keys (sensitive)
+.api_key

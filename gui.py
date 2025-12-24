@@ -24,6 +24,13 @@ class BettingModelGUI:
         
         # API key storage (must be before create_widgets)
         self.api_key = tk.StringVar()
+        self.api_key_file = ".api_key"
+        
+        # Load saved API key if exists
+        self.load_api_key()
+        
+        # Save API key when it changes
+        self.api_key.trace_add('write', lambda *args: self.save_api_key())
         
         # Style configuration
         self.setup_styles()
@@ -239,6 +246,27 @@ class BettingModelGUI:
         except Exception as e:
             self.output_text.insert(tk.END, f"[INFO] Could not check model status: {str(e)}\n\n")
             self.status_bar.config(text="Ready")
+    
+    def load_api_key(self):
+        """Load saved API key from file."""
+        try:
+            if os.path.exists(self.api_key_file):
+                with open(self.api_key_file, 'r') as f:
+                    saved_key = f.read().strip()
+                    if saved_key:
+                        self.api_key.set(saved_key)
+        except Exception as e:
+            pass  # Silently fail if can't load
+    
+    def save_api_key(self):
+        """Save API key to file."""
+        try:
+            key = self.api_key.get().strip()
+            if key:
+                with open(self.api_key_file, 'w') as f:
+                    f.write(key)
+        except Exception as e:
+            pass  # Silently fail if can't save
         
     def open_url(self, url):
         """Open URL in browser."""
