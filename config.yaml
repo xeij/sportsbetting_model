@@ -83,19 +83,23 @@ models:
 # Backtesting configuration
 backtest:
   # Value bet threshold (bet if model_prob - implied_prob > threshold)
-  value_threshold: 0.05  # 5%
+  # Increased from 5% to 10% for more selective betting
+  value_threshold: 0.10  # 10% edge required
   
   # Kelly criterion fraction (use fractional Kelly for safety)
-  kelly_fraction: 0.10  # One-tenth Kelly (reduced from 0.25 for stability)
+  # Reduced from 0.10 to 0.05 for more conservative stake sizing
+  kelly_fraction: 0.05  # One-twentieth Kelly (very conservative)
   
   # Starting bankroll for simulation
   starting_bankroll: 1000.0
   
-  # Minimum odds to consider (avoid very low odds)
-  min_odds: 1.5
+  # Minimum odds to consider (avoid very low odds with high variance)
+  # Increased from 1.5 to 1.8 to avoid favorites
+  min_odds: 1.8
   
-  # Maximum odds to consider (avoid very high odds)
-  max_odds: 10.0
+  # Maximum odds to consider (avoid very high odds with low probability)
+  # Reduced from 10.0 to 6.0 to avoid longshots
+  max_odds: 6.0
   
   # Vig removal method: 'margin' or 'power'
   vig_method: "margin"
