@@ -137,9 +137,14 @@ def predict_upcoming_fixtures(fixtures_df: pd.DataFrame, model_name: str = "xgbo
     
     print_progress(f"Predicting on {len(fixtures_df)} fixtures...")
     
+    # Reset index to ensure positional indexing works
+    fixtures_df = fixtures_df.reset_index(drop=True)
+    
     results = []
     
-    for idx, row in fixtures_df.iterrows():
+    for idx in range(len(fixtures_df)):
+        row = fixtures_df.iloc[idx]
+        
         # Get predictions
         match_features = fixtures_df.iloc[[idx]]
         model_probs = predict_match(model, match_features, feature_cols)
@@ -188,7 +193,10 @@ def predict_upcoming_fixtures(fixtures_df: pd.DataFrame, model_name: str = "xgbo
     
     results_df = pd.DataFrame(results)
     
-    print_progress(f"Predictions complete. {len(results_df[results_df['Value_Bets'] > 0])} matches with value bets.")
+    if len(results_df) > 0:
+        print_progress(f"Predictions complete. {len(results_df[results_df['Value_Bets'] > 0])} matches with value bets.")
+    else:
+        print_progress("No predictions could be made (no odds data available).", "WARNING")
     
     return results_df
 

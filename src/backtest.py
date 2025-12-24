@@ -47,6 +47,11 @@ def simulate_betting(model, X_test: pd.DataFrame, y_test: pd.Series,
     bankroll = starting_bankroll
     bet_history = []
     
+    # Add stake caps to prevent exponential growth
+    max_stake_pct = 0.05  # Maximum 5% of STARTING bankroll per bet
+    max_stake = starting_bankroll * max_stake_pct
+    min_stake = 10.0  # Minimum bet size
+    
     for idx in range(len(X_test)):
         # Get match data
         match_features = X_test.iloc[[idx]]
@@ -91,7 +96,21 @@ def simulate_betting(model, X_test: pd.DataFrame, y_test: pd.Series,
             kelly_fraction
         )
         
+        # Apply stake as percentage of CURRENT bankroll
         stake = bankroll * kelly_stake
+        
+        # Cap stake to maximum (5% of starting bankroll)
+        stake = min(stake, max_stake)
+        
+        # Ensure minimum stake
+        stake = max(stake, min_stake)
+        
+        # Don't bet if bankroll is too low
+        if bankroll < min_stake * 2:
+            continue
+        
+        # Ensure stake doesn't exceed current bankroll
+        stake = min(stake, bankroll * 0.5)  # Never risk more than 50% of current bankroll
         
         # Determine if bet won
         outcome_map = {
@@ -111,6 +130,10 @@ def simulate_betting(model, X_test: pd.DataFrame, y_test: pd.Series,
         
         # Update bankroll
         bankroll += profit
+        
+        # Prevent bankroll from going negative
+        if bankroll < 0:
+            bankroll = 0
         
         # Record bet
         bet_record = {

@@ -4,6 +4,7 @@
 data:
   base_url: "https://www.football-data.co.uk/mmz4281"
   divisions:
+    - "E0"  # Premier League (TOP TIER - for Polymarket/Kalshi)
     - "E2"  # League One
     - "E3"  # League Two
     - "EC"  # National League
@@ -85,7 +86,7 @@ backtest:
   value_threshold: 0.05  # 5%
   
   # Kelly criterion fraction (use fractional Kelly for safety)
-  kelly_fraction: 0.25  # Quarter Kelly
+  kelly_fraction: 0.10  # One-tenth Kelly (reduced from 0.25 for stability)
   
   # Starting bankroll for simulation
   starting_bankroll: 1000.0
