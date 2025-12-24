@@ -31,6 +31,9 @@ class BettingModelGUI:
         # Create main layout
         self.create_widgets()
         
+        # Check model freshness on startup
+        self.check_models_on_startup()
+        
     def setup_styles(self):
         """Configure ttk styles for modern look."""
         style = ttk.Style()
@@ -198,6 +201,44 @@ class BettingModelGUI:
         
         thread = threading.Thread(target=worker, daemon=True)
         thread.start()
+    
+    def check_models_on_startup(self):
+        """Check if models need retraining on startup."""
+        try:
+            from src.model_checker import check_model_freshness
+            
+            status = check_model_freshness()
+            
+            # Display status in output
+            self.output_text.insert(tk.END, "=" * 80 + "\n")
+            self.output_text.insert(tk.END, "MODEL STATUS CHECK\n")
+            self.output_text.insert(tk.END, "=" * 80 + "\n\n")
+            
+            if not status['data_exists']:
+                self.output_text.insert(tk.END, "[WARNING] No data found.\n")
+                self.output_text.insert(tk.END, "Click 'Download Data' to get started.\n\n")
+                self.status_bar.config(text="No data - Download required")
+            elif not status['models_exist']:
+                self.output_text.insert(tk.END, "[WARNING] No trained models found.\n")
+                self.output_text.insert(tk.END, "Click 'Train Models' after downloading data.\n\n")
+                self.status_bar.config(text="No models - Training required")
+            elif not status['models_up_to_date']:
+                self.output_text.insert(tk.END, "[WARNING] Models are outdated!\n")
+                self.output_text.insert(tk.END, f"Data updated: {status['data_date'].strftime('%Y-%m-%d %H:%M')}\n")
+                self.output_text.insert(tk.END, f"Models trained: {status['model_date'].strftime('%Y-%m-%d %H:%M')}\n")
+                self.output_text.insert(tk.END, "\nClick 'Train Models' to retrain with latest data.\n\n")
+                self.status_bar.config(text="Models outdated - Retraining recommended")
+            else:
+                self.output_text.insert(tk.END, "[OK] Models are up to date.\n")
+                self.output_text.insert(tk.END, f"Trained: {status['model_date'].strftime('%Y-%m-%d %H:%M')}\n\n")
+                self.output_text.insert(tk.END, "Ready to run backtests or find value bets.\n\n")
+                self.status_bar.config(text="Ready - Models up to date")
+            
+            self.output_text.insert(tk.END, "=" * 80 + "\n")
+            
+        except Exception as e:
+            self.output_text.insert(tk.END, f"[INFO] Could not check model status: {str(e)}\n\n")
+            self.status_bar.config(text="Ready")
         
     def open_url(self, url):
         """Open URL in browser."""
