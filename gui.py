@@ -22,40 +22,40 @@ class BettingModelGUI:
         self.root.geometry("900x700")
         self.root.configure(bg='#1e1e1e')
         
+        # API key storage (must be before create_widgets)
+        self.api_key = tk.StringVar()
+        
         # Style configuration
         self.setup_styles()
         
         # Create main layout
         self.create_widgets()
         
-        # API key storage
-        self.api_key = tk.StringVar()
-        
     def setup_styles(self):
         """Configure ttk styles for modern look."""
         style = ttk.Style()
         style.theme_use('clam')
         
-        # Button style
+        # Button style - gray background
         style.configure('Action.TButton',
-                       background='#0d7377',
+                       background='#404040',
                        foreground='white',
                        borderwidth=0,
                        focuscolor='none',
-                       font=('Segoe UI', 10, 'bold'),
+                       font=('Segoe UI', 10),
                        padding=10)
         style.map('Action.TButton',
-                 background=[('active', '#14a085')])
+                 background=[('active', '#505050')])
         
-        # Label style
+        # Label style - transparent background
         style.configure('Title.TLabel',
                        background='#1e1e1e',
                        foreground='#ffffff',
-                       font=('Segoe UI', 16, 'bold'))
+                       font=('Segoe UI', 14, 'bold'))
         
         style.configure('Info.TLabel',
                        background='#1e1e1e',
-                       foreground='#b0b0b0',
+                       foreground='#888888',
                        font=('Segoe UI', 9))
         
     def create_widgets(self):
@@ -64,11 +64,11 @@ class BettingModelGUI:
         header_frame = tk.Frame(self.root, bg='#1e1e1e')
         header_frame.pack(fill='x', padx=20, pady=20)
         
-        title = ttk.Label(header_frame, text="⚽ Football Betting Model", style='Title.TLabel')
+        title = ttk.Label(header_frame, text="Football Betting Model", style='Title.TLabel')
         title.pack()
         
         subtitle = ttk.Label(header_frame, 
-                            text="ML-powered value bet identification for English football",
+                            text="Machine learning value bet identification",
                             style='Info.TLabel')
         subtitle.pack()
         
@@ -83,21 +83,21 @@ class BettingModelGUI:
         actions_label = ttk.Label(left_panel, text="Actions", style='Title.TLabel')
         actions_label.pack(pady=15)
         
-        # Action buttons
-        self.create_action_button(left_panel, "📥 Download Data", self.download_data_action,
-                                  "Download historical match data (16 seasons)")
+        # Action buttons (no emojis)
+        self.create_action_button(left_panel, "Download Data", self.download_data_action,
+                                  "Download historical match data")
         
-        self.create_action_button(left_panel, "🤖 Train Models", self.train_models_action,
-                                  "Train XGBoost & LightGBM models")
+        self.create_action_button(left_panel, "Train Models", self.train_models_action,
+                                  "Train XGBoost and LightGBM models")
         
-        self.create_action_button(left_panel, "📊 Run Backtest", self.run_backtest_action,
-                                  "Simulate betting strategy on historical data")
+        self.create_action_button(left_panel, "Run Backtest", self.run_backtest_action,
+                                  "Simulate betting strategy")
         
-        self.create_action_button(left_panel, "🔍 Fetch Live Odds", self.fetch_odds_action,
-                                  "Get current odds from The Odds API")
+        self.create_action_button(left_panel, "Fetch Live Odds", self.fetch_odds_action,
+                                  "Get current odds from API")
         
-        self.create_action_button(left_panel, "💰 Find Value Bets", self.predict_action,
-                                  "Identify profitable betting opportunities")
+        self.create_action_button(left_panel, "Find Value Bets", self.predict_action,
+                                  "Identify betting opportunities")
         
         # API Key section
         api_frame = tk.Frame(left_panel, bg='#2d2d2d')
@@ -138,7 +138,7 @@ class BettingModelGUI:
         
         # Status bar
         self.status_bar = tk.Label(self.root, text="Ready", 
-                                   bg='#0d7377', fg='white',
+                                   bg='#404040', fg='white',
                                    font=('Segoe UI', 9), anchor='w', padx=10)
         self.status_bar.pack(side='bottom', fill='x')
         
