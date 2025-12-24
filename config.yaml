@@ -1,0 +1,113 @@
+# Configuration for Lower League Football Value Bettor
+
+# Data source configuration
+data:
+  base_url: "https://www.football-data.co.uk/mmz4281"
+  divisions:
+    - "E2"  # League One
+    - "E3"  # League Two
+    - "EC"  # National League
+  
+  # Seasons to download (format: YYZZ for 20YY/20ZZ season)
+  # Last 10 seasons from 2014/15 to 2024/25
+  seasons:
+    - "1415"
+    - "1516"
+    - "1617"
+    - "1718"
+    - "1819"
+    - "1920"
+    - "2021"
+    - "2122"
+    - "2223"
+    - "2324"
+    - "2425"
+  
+  # Output paths
+  raw_data_dir: "data/raw"
+  processed_data_path: "data/processed/all_matches.csv"
+
+# Feature engineering parameters
+features:
+  # Form calculation windows
+  form_windows:
+    - 5   # Last 5 games
+    - 10  # Last 10 games
+  
+  # Minimum matches required for team statistics
+  min_matches_for_stats: 3
+  
+  # Head-to-head lookback (number of previous meetings)
+  h2h_lookback: 5
+
+# Model configuration
+models:
+  # Test set size (most recent matches)
+  test_size: 0.2
+  
+  # Random state for reproducibility
+  random_state: 42
+  
+  # XGBoost hyperparameters
+  xgboost:
+    n_estimators: 200
+    max_depth: 6
+    learning_rate: 0.05
+    subsample: 0.8
+    colsample_bytree: 0.8
+    min_child_weight: 3
+    gamma: 0.1
+    reg_alpha: 0.1
+    reg_lambda: 1.0
+  
+  # LightGBM hyperparameters
+  lightgbm:
+    n_estimators: 200
+    max_depth: 6
+    learning_rate: 0.05
+    subsample: 0.8
+    colsample_bytree: 0.8
+    min_child_samples: 20
+    reg_alpha: 0.1
+    reg_lambda: 1.0
+  
+  # Model save path
+  model_save_dir: "models"
+
+# Backtesting configuration
+backtest:
+  # Value bet threshold (bet if model_prob - implied_prob > threshold)
+  value_threshold: 0.05  # 5%
+  
+  # Kelly criterion fraction (use fractional Kelly for safety)
+  kelly_fraction: 0.25  # Quarter Kelly
+  
+  # Starting bankroll for simulation
+  starting_bankroll: 1000.0
+  
+  # Minimum odds to consider (avoid very low odds)
+  min_odds: 1.5
+  
+  # Maximum odds to consider (avoid very high odds)
+  max_odds: 10.0
+  
+  # Vig removal method: 'margin' or 'power'
+  vig_method: "margin"
+
+# Prediction configuration
+prediction:
+  # Minimum model probability to consider betting
+  min_model_prob: 0.15
+  
+  # Bookmakers to use for odds (in order of preference)
+  bookmakers:
+    - "Pinnacle"  # PS prefix
+    - "Bet365"    # B365 prefix
+    - "Average"   # Avg prefix
+
+# Visualization settings
+visualization:
+  figure_size: [12, 8]
+  dpi: 100
+  style: "seaborn-v0_8-darkgrid"
+  save_dir: "data/visualizations"
