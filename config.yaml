@@ -9,19 +9,24 @@ data:
     - "EC"  # National League
   
   # Seasons to download (format: YYZZ for 20YY/20ZZ season)
-  # Last 10 seasons from 2014/15 to 2024/25
+  # Extended dataset: 16 seasons from 2010/11 to 2025/26
   seasons:
-    - "1415"
-    - "1516"
-    - "1617"
-    - "1718"
-    - "1819"
-    - "1920"
-    - "2021"
-    - "2122"
-    - "2223"
-    - "2324"
-    - "2425"
+    - "1011"  # 2010/11
+    - "1112"  # 2011/12
+    - "1213"  # 2012/13
+    - "1314"  # 2013/14
+    - "1415"  # 2014/15
+    - "1516"  # 2015/16
+    - "1617"  # 2016/17
+    - "1718"  # 2017/18
+    - "1819"  # 2018/19
+    - "1920"  # 2019/20 (COVID-shortened)
+    - "2021"  # 2020/21
+    - "2122"  # 2021/22
+    - "2223"  # 2022/23
+    - "2324"  # 2023/24
+    - "2425"  # 2024/25
+    - "2526"  # 2025/26 (CURRENT SEASON)
   
   # Output paths
   raw_data_dir: "data/raw"
@@ -42,17 +47,17 @@ features:
 
 # Model configuration
 models:
-  # Test set size (most recent matches)
-  test_size: 0.2
+  # Test set size (most recent matches) - reduced to 15% to maximize training data
+  test_size: 0.15
   
   # Random state for reproducibility
   random_state: 42
   
-  # XGBoost hyperparameters
+  # XGBoost hyperparameters - increased for larger dataset
   xgboost:
-    n_estimators: 200
-    max_depth: 6
-    learning_rate: 0.05
+    n_estimators: 300  # Increased from 200
+    max_depth: 8       # Increased from 6
+    learning_rate: 0.03  # Slightly reduced for more iterations
     subsample: 0.8
     colsample_bytree: 0.8
     min_child_weight: 3
@@ -60,11 +65,11 @@ models:
     reg_alpha: 0.1
     reg_lambda: 1.0
   
-  # LightGBM hyperparameters
+  # LightGBM hyperparameters - increased for larger dataset
   lightgbm:
-    n_estimators: 200
-    max_depth: 6
-    learning_rate: 0.05
+    n_estimators: 300  # Increased from 200
+    max_depth: 8       # Increased from 6
+    learning_rate: 0.03  # Slightly reduced for more iterations
     subsample: 0.8
     colsample_bytree: 0.8
     min_child_samples: 20

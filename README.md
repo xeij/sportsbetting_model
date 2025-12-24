@@ -1,254 +1,244 @@
 # Lower League Football Value Bettor
 
-A production-ready sports betting odds prediction model focused on lower-tier English football leagues (League One, League Two, and National League) to identify value betting opportunities.
+A machine learning system for predicting match outcomes in lower-tier English football leagues and identifying value betting opportunities.
 
-## 🎯 Project Overview
+## Overview
 
-This project uses machine learning to predict match outcomes in lower-tier English football and identify value bets where the model's predicted probability exceeds the market's implied probability. The system:
+This project analyzes historical match data from League One (E2), League Two (E3), and National League (EC) to predict match outcomes and identify bets where the model's probability assessment differs significantly from bookmaker odds. The system uses gradient boosting algorithms and implements Kelly Criterion for stake sizing.
 
-- Downloads free historical data from football-data.co.uk
-- Engineers meaningful features (form, head-to-head, rest days, etc.)
-- Trains multiple models (Logistic Regression, XGBoost, LightGBM)
-- Backtests betting strategies with Kelly criterion stake sizing
-- Identifies value betting opportunities on upcoming fixtures
+## Installation
 
-## ⚠️ Disclaimer
+### Prerequisites
 
-**This model is for educational purposes only.** Sports betting involves risk, and past performance does not guarantee future results. Always bet responsibly and within your means. This is not financial advice.
+- Python 3.11 or higher
+- pip package manager
 
-## 🚀 Quick Start
+### Setup Instructions
 
-### Installation
+1. Navigate to the project directory:
 
-1. **Clone or download this repository**
+2. Install required Python packages:
+```bash
+pip install -r requirements.txt
+```
 
-2. **Install dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
+The installation will include:
+- pandas and numpy for data processing
+- scikit-learn for baseline models
+- xgboost and lightgbm for gradient boosting
+- matplotlib and seaborn for visualizations
+- requests for data downloading
+- pyyaml for configuration management
 
-3. **Run the full pipeline:**
-   ```bash
-   python main.py --all
-   ```
+### Verifying Installation
 
-This will:
-- Download 10 seasons of historical data for E2, E3, and EC divisions
-- Engineer features and train models
-- Run backtesting simulation
-- Generate predictions on recent fixtures
+Test that the installation was successful:
+```bash
+python -c "import pandas, xgboost, lightgbm; print('Installation successful')"
+```
 
-## 📊 Usage
+## Usage
 
-### Individual Commands
+The system provides a command-line interface with several modes of operation.
 
-**Download data only:**
+### Download Historical Data
+
+Download match data from football-data.co.uk:
 ```bash
 python main.py --download
 ```
 
-**Train models only:**
+This will download 16 seasons of data (2010/11 through 2025/26) for all three divisions, totaling approximately 18,000 matches.
+
+### Train Models
+
+Train the prediction models on downloaded data:
 ```bash
 python main.py --train
 ```
 
-**Run backtest only:**
+This process will:
+- Engineer features from raw match data
+- Split data chronologically (85% training, 15% testing)
+- Train three models: Logistic Regression, XGBoost, and LightGBM
+- Generate evaluation metrics and visualizations
+- Save trained models to the models directory
+
+Expected training time: 15-25 minutes depending on hardware.
+
+### Run Backtesting
+
+Simulate betting strategy on historical data:
 ```bash
 python main.py --backtest
 ```
 
-**Predict on upcoming fixtures:**
+This evaluates model performance by simulating bets on the test set using Kelly Criterion for stake sizing. Results include ROI, win rate, and detailed bet history.
+
+### Generate Predictions
+
+Identify value bets on recent fixtures:
 ```bash
 python main.py --predict
 ```
 
-**Use a specific model:**
+### Complete Pipeline
+
+Run all steps sequentially:
 ```bash
-python main.py --backtest --model lightgbm_model
-python main.py --predict --model baseline_model
+python main.py --all
 ```
 
-Available models: `baseline_model`, `xgboost_model`, `lightgbm_model`
+### Model Selection
 
-## 📁 Project Structure
-
-```
-lower-league-football-value-bettor/
-├── data/
-│   ├── raw/                    # Downloaded CSV files
-│   ├── processed/              # Merged and engineered data
-│   └── visualizations/         # Plots and reports
-├── models/                     # Saved trained models
-├── src/
-│   ├── utils.py               # Odds conversion, Kelly criterion
-│   ├── data_loader.py         # Data downloading and merging
-│   ├── feature_engineering.py # Feature creation
-│   ├── modeling.py            # Model training and evaluation
-│   ├── prediction.py          # Value bet identification
-│   └── backtest.py            # Strategy simulation
-├── config.yaml                # Configuration parameters
-├── main.py                    # CLI entry point
-├── requirements.txt           # Python dependencies
-└── README.md                  # This file
+Specify which trained model to use for backtesting or predictions:
+```bash
+python main.py --backtest --model xgboost_model
+python main.py --predict --model lightgbm_model
 ```
 
-## 🔧 Configuration
+## Configuration
 
-Edit `config.yaml` to customize:
+Edit config.yaml to customize:
 
-- **Data source:** Seasons and divisions to download
-- **Features:** Form windows, H2H lookback
-- **Models:** Hyperparameters for XGBoost and LightGBM
-- **Backtesting:** Value threshold, Kelly fraction, bankroll
-- **Prediction:** Minimum probabilities, bookmaker preferences
+**Data Settings:**
+- Seasons to download
+- Divisions to include
+- Data source URLs
 
-## 📈 Features
+**Feature Engineering:**
+- Form calculation windows (default: 5 and 10 games)
+- Head-to-head lookback period
+- Minimum matches for statistics
 
-The model creates the following features for each match:
+**Model Parameters:**
+- Train/test split ratio
+- XGBoost and LightGBM hyperparameters
+- Number of estimators, tree depth, learning rate
 
-### Form Features
-- Recent points, goals scored/conceded (last 5 and 10 games)
-- Home/away specific form
-- Overall team form
+**Backtesting:**
+- Value threshold for bet identification (default: 5%)
+- Kelly fraction for stake sizing (default: 0.25)
+- Starting bankroll for simulation
+- Odds range filters
 
-### Head-to-Head
-- Previous meetings between teams
-- Historical win rates and goal averages
+## Features
 
-### Situational
-- Rest days since last match
+The model creates the following predictive features:
+
+**Form Metrics:**
+- Recent points, goals scored/conceded over 5 and 10 game windows
+- Home-specific and away-specific performance
+- Overall team form across all venues
+
+**Historical Data:**
+- Head-to-head records between teams
+- Previous meeting outcomes and goal averages
+
+**Situational Factors:**
+- Days of rest since previous match
 - Goal difference trends
 
-### Odds-Based
+**Market Analysis:**
 - Implied probabilities from closing odds
-- Bookmaker overround (margin)
+- Bookmaker margin (overround)
 - True probabilities with vig removed
 
-## 🤖 Models
+## Models
 
-### Baseline: Logistic Regression
-Simple multinomial logistic regression with class balancing.
+**Baseline Model:**
+Multinomial logistic regression with balanced class weights. Provides a performance benchmark.
 
-### XGBoost
-Gradient boosting with hyperparameter tuning for multi-class classification.
+**XGBoost:**
+Gradient boosting with 300 estimators, maximum depth of 8, and regularization. Primary model for predictions.
 
-### LightGBM
-Fast gradient boosting optimized for lower-tier leagues.
+**LightGBM:**
+Fast gradient boosting optimized for efficiency. Alternative to XGBoost with similar performance.
 
-All models predict probabilities for three outcomes: Home Win, Draw, Away Win.
+All models output calibrated probabilities for three outcomes: Home Win, Draw, Away Win.
 
-## 💰 Backtesting
-
-The backtesting module simulates a betting strategy:
-
-1. **Value Identification:** Bet only when model probability > market probability + threshold
-2. **Stake Sizing:** Use fractional Kelly criterion for optimal bet sizing
-3. **Risk Management:** Filter by odds range, use conservative Kelly fraction
-4. **Evaluation:** Track ROI, win rate, and bankroll over time
-
-### Backtest Output
-
-- **Metrics:** Total bets, ROI, win rate, final bankroll
-- **Visualizations:** Cumulative profit and bankroll curves
-- **Bet History:** Detailed CSV with all simulated bets
-
-## 🎲 Prediction
-
-The prediction module identifies value bets on upcoming fixtures:
-
-```
-UPCOMING FIXTURES - VALUE BET PREDICTIONS
-================================================================================
-
-2024-03-15 - Portsmouth vs Barnsley
---------------------------------------------------------------------------------
-Model Probabilities:
-  Home: 52.3%  Draw: 26.1%  Away: 21.6%
-Market Odds:
-  Home: 2.10  Draw: 3.40  Away: 3.80
-
-*** VALUE BET DETECTED ***
-  Bet: Home Win
-  Edge: 7.2%
-  Expected Value: 9.8%
-```
-
-## 📊 Data Source
-
-Historical data is sourced from [football-data.co.uk](https://www.football-data.co.uk/), which provides free CSV files with:
-
-- Match results (FTHG, FTAG)
-- Closing odds from multiple bookmakers
-- Match statistics (shots, corners, cards)
-
-**Divisions:**
-- **E2:** League One (English third tier)
-- **E3:** League Two (English fourth tier)
-- **EC:** National League (English fifth tier)
-
-## 🔍 Model Evaluation
+## Evaluation Metrics
 
 Models are evaluated using:
 
-- **Accuracy:** Percentage of correct predictions
-- **Log Loss:** Probabilistic accuracy measure
-- **Brier Score:** Calibration of predicted probabilities
-- **Backtested ROI:** Profitability on historical data
+- **Accuracy:** Percentage of correct outcome predictions
+- **Log Loss:** Measures probabilistic accuracy
+- **Brier Score:** Assesses probability calibration
+- **Backtested ROI:** Profitability on historical test data
 
-Calibration curves and feature importance plots are generated automatically.
+Calibration curves and feature importance plots are automatically generated during training.
 
-## 🛠️ Advanced Usage
+## Data Source
 
-### Custom Fixtures
+Historical data is sourced from football-data.co.uk, which provides free CSV files containing:
 
-To predict on your own upcoming fixtures:
+- Match results (full-time home goals, full-time away goals)
+- Closing odds from multiple bookmakers
+- Match statistics (shots, corners, cards when available)
 
-1. Create a CSV with the same format as the processed data
-2. Engineer features using `src/feature_engineering.py`
-3. Load the model and call `predict_upcoming_fixtures()`
+**Divisions:**
+- E2: League One (English third tier)
+- E3: League Two (English fourth tier)
+- EC: National League (English fifth tier)
 
-### Hyperparameter Tuning
+Data availability varies by season. Older seasons may have limited statistical features.
 
-Modify `config.yaml` to experiment with different model parameters. Recommended approach:
+## Backtesting Methodology
 
-1. Adjust `xgboost` or `lightgbm` parameters
-2. Run `python main.py --train`
-3. Compare metrics and backtest results
+The backtesting module simulates a betting strategy:
 
-### Live Betting
+1. **Value Identification:** Bets are placed only when model probability exceeds market probability plus a threshold (default 5%)
+2. **Stake Sizing:** Fractional Kelly Criterion (default: quarter Kelly) determines bet size
+3. **Risk Management:** Bets filtered by odds range; conservative Kelly fraction reduces variance
+4. **Evaluation:** Tracks cumulative profit, ROI, win rate, and bankroll over time
 
-For live betting (not included):
+All backtesting uses chronological train/test splits to prevent data leakage.
 
-1. Fetch latest odds from a bookmaker API
-2. Engineer features for upcoming matches
-3. Use `src/prediction.py` to identify value bets
-4. Place bets manually or via API
+## Output Files
 
-## 📝 Notes
+**Trained Models (models/):**
+- baseline_model.joblib
+- xgboost_model.joblib
+- lightgbm_model.joblib
 
-- **Chronological Validation:** The model uses strict time-based train/test splits to prevent data leakage
-- **Class Imbalance:** Draws are rare; models use class weighting to handle this
-- **Market Efficiency:** Lower leagues may have more inefficiencies than top-tier leagues
-- **Vig Removal:** The model removes bookmaker margin to get true probabilities
+**Data Files (data/):**
+- data/processed/all_matches.csv - Merged historical data
+- data/processed/all_matches_features.csv - Feature-engineered dataset
 
-## 🤝 Contributing
+**Visualizations (data/visualizations/):**
+- calibration_xgboost.png - Probability calibration curves
+- calibration_lightgbm.png
+- feature_importance_xgboost.png - Top predictive features
+- feature_importance_lightgbm.png
+- roi_curve.png - Cumulative profit and bankroll over time
+- backtest_report.txt - Detailed performance metrics
+- bet_history.csv - Complete record of simulated bets
+- predictions.csv - Value bet recommendations
 
-This is an educational project. Feel free to:
+## Technical Notes
 
-- Experiment with different features
-- Try alternative models (neural networks, ensembles)
-- Improve data sources (add more statistics)
-- Enhance backtesting (transaction costs, multiple bookmakers)
+**Chronological Validation:**
+The system uses strict time-based train/test splits. Models are trained on earlier seasons and tested on recent seasons to simulate real-world deployment.
 
-## 📄 License
+**Class Imbalance:**
+Draws are less frequent than home or away wins. Models use class weighting to handle this imbalance.
 
-This project is provided as-is for educational purposes. Use at your own risk.
+**Market Efficiency:**
+Lower-tier leagues may exhibit more pricing inefficiencies than top-tier leagues, potentially offering more value betting opportunities.
 
-## 🙏 Acknowledgments
+**Vig Removal:**
+The system removes bookmaker margin from odds to estimate true probabilities for comparison with model predictions.
 
-- Data source: [football-data.co.uk](https://www.football-data.co.uk/)
-- Inspired by sports analytics and quantitative betting research
+## Troubleshooting
 
----
+**Import Errors:**
+Ensure all dependencies are installed: `pip install -r requirements.txt`
 
-**Remember:** The house always has an edge. Bet responsibly! 🎰
+**Data Download Failures:**
+Check internet connection. The system retries failed downloads automatically.
+
+**Memory Issues:**
+Feature engineering processes all matches sequentially. For very large datasets, consider reducing the number of seasons in config.yaml.
+
+**Long Training Times:**
+Training 300-estimator gradient boosting models on 18,000+ matches takes 15-25 minutes. This is expected behavior.

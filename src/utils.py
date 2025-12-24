@@ -179,6 +179,10 @@ def standardize_team_name(team: str) -> str:
     Returns:
         Standardized team name
     """
+    # Handle NaN/None values
+    if not isinstance(team, str):
+        return ''
+    
     # Convert to lowercase and strip whitespace
     team = team.lower().strip()
     

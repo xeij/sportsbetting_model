@@ -120,6 +120,10 @@ def clean_data(df: pd.DataFrame) -> pd.DataFrame:
         if df['Date'].isna().all():
             df['Date'] = pd.to_datetime(df['Date'], format='%d/%m/%y', errors='coerce')
     
+    # Remove rows with missing essential data (before standardization)
+    essential_columns = ['Date', 'HomeTeam', 'AwayTeam', 'FTHG', 'FTAG']
+    df = df.dropna(subset=essential_columns)
+    
     # Standardize team names
     if 'HomeTeam' in df.columns:
         df['HomeTeam_Original'] = df['HomeTeam']
@@ -144,10 +148,6 @@ def clean_data(df: pd.DataFrame) -> pd.DataFrame:
     
     for col in odds_columns:
         df[col] = pd.to_numeric(df[col], errors='coerce')
-    
-    # Remove rows with missing essential data
-    essential_columns = ['Date', 'HomeTeam', 'AwayTeam', 'FTHG', 'FTAG']
-    df = df.dropna(subset=essential_columns)
     
     # Sort by date
     df = df.sort_values('Date').reset_index(drop=True)
