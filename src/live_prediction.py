@@ -26,6 +26,10 @@ def load_live_odds_for_prediction(config_path: str = "config.yaml"):
     # Load live odds
     live_odds_df = pd.read_csv(live_odds_path, parse_dates=['Date'])
     
+    # Remove timezone info to match historical data (which is timezone-naive)
+    if live_odds_df['Date'].dt.tz is not None:
+        live_odds_df['Date'] = live_odds_df['Date'].dt.tz_localize(None)
+    
     # Load historical data with features
     features_path = config['data']['processed_data_path'].replace('.csv', '_features.csv')
     
