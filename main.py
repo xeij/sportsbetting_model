@@ -25,6 +25,7 @@ from src.modeling import (
 )
 from src.backtest import simulate_betting, calculate_roi, plot_roi_curve, generate_backtest_report
 from src.prediction import predict_upcoming_fixtures, format_prediction_output
+from src.live_prediction import load_live_odds_for_prediction
 
 
 def download_data(config_path: str = "config.yaml") -> None:
@@ -217,21 +218,24 @@ def predict_fixtures(config_path: str = "config.yaml", model_name: str = "xgboos
     print_progress("PREDICTING UPCOMING FIXTURES")
     print_progress("=" * 80)
     
-    # For demo purposes, we'll use the most recent matches from the test set
-    # In production, you would load actual upcoming fixtures
-    
     config = load_config(config_path)
     
-    features_path = config['data']['processed_data_path'].replace('.csv', '_features.csv')
+    # Try to load live odds first
+    upcoming_fixtures = load_live_odds_for_prediction(config_path)
     
-    if not os.path.exists(features_path):
-        print_progress("Engineered features not found. Run training first.", "ERROR")
-        return
-    
-    df = pd.read_csv(features_path, parse_dates=['Date'])
-    
-    # Use last 10 matches as "upcoming" fixtures for demo
-    upcoming_fixtures = df.tail(10)
+    if upcoming_fixtures is None:
+        # Fallback to demo mode
+        print_progress("No live odds found. Using demo mode with recent matches.", "WARNING")
+        print_progress("Click 'Fetch Live Odds' first to get real upcoming fixtures.", "WARNING")
+        
+        features_path = config['data']['processed_data_path'].replace('.csv', '_features.csv')
+        
+        if not os.path.exists(features_path):
+            print_progress("Engineered features not found. Run training first.", "ERROR")
+            return
+        
+        df = pd.read_csv(features_path, parse_dates=['Date'])
+        upcoming_fixtures = df.tail(10)
     
     # Make predictions
     predictions = predict_upcoming_fixtures(upcoming_fixtures, model_name, config_path)
