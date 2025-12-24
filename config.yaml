@@ -4,7 +4,7 @@
 data:
   base_url: "https://www.football-data.co.uk/mmz4281"
   divisions:
-    - "E0"  # Premier League (TOP TIER - for Polymarket/Kalshi)
+    - "E0"  # Premier League 
     - "E2"  # League One
     - "E3"  # League Two
     - "EC"  # National League

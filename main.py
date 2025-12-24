@@ -170,6 +170,46 @@ def run_backtest(config_path: str = "config.yaml", model_name: str = "xgboost_mo
     print_progress("=" * 80)
 
 
+
+
+def fetch_live_odds(config_path: str = "config.yaml", api_key: str = None) -> None:
+    """Fetch live odds from The Odds API."""
+    print_progress("=" * 80)
+    print_progress("FETCHING LIVE ODDS")
+    print_progress("=" * 80)
+    
+    from src.live_odds import get_live_odds, save_live_odds
+    import os
+    
+    # Get API key from environment or argument
+    if not api_key:
+        api_key = os.getenv('ODDS_API_KEY')
+    
+    if not api_key:
+        print_progress("ERROR: No API key provided!", "ERROR")
+        print_progress("Get a free API key at: https://the-odds-api.com/", "INFO")
+        print_progress("Then set it with: set ODDS_API_KEY=your_key_here", "INFO")
+        print_progress("Or use: python main.py --fetch-odds --api-key YOUR_KEY", "INFO")
+        return
+    
+    # Fetch odds for all configured leagues
+    leagues = [
+        'soccer_epl',  # Premier League
+        'soccer_england_league1',  # League One
+        'soccer_england_league2'   # League Two
+    ]
+    
+    odds_df = get_live_odds(api_key=api_key, leagues=leagues)
+    
+    if len(odds_df) > 0:
+        save_live_odds(odds_df, "data/live_odds.csv")
+        print_progress(f"\nFetched {len(odds_df)} upcoming matches with odds")
+        print_progress("Saved to: data/live_odds.csv")
+        print_progress("\nNow run: python main.py --predict-live")
+    else:
+        print_progress("No upcoming matches found", "WARNING")
+
+
 def predict_fixtures(config_path: str = "config.yaml", model_name: str = "xgboost_model") -> None:
     """Predict on upcoming fixtures."""
     print_progress("=" * 80)
@@ -205,6 +245,7 @@ def predict_fixtures(config_path: str = "config.yaml", model_name: str = "xgboos
     print_progress(f"\nPredictions saved to {viz_dir}/predictions.csv")
 
 
+
 def main():
     """Main entry point."""
     parser = argparse.ArgumentParser(
@@ -215,16 +256,19 @@ def main():
     parser.add_argument('--train', action='store_true', help='Train models')
     parser.add_argument('--backtest', action='store_true', help='Run backtesting')
     parser.add_argument('--predict', action='store_true', help='Predict on upcoming fixtures')
+    parser.add_argument('--fetch-odds', action='store_true', help='Fetch live odds from The Odds API')
     parser.add_argument('--all', action='store_true', help='Run full pipeline')
     parser.add_argument('--model', type=str, default='xgboost_model', 
                        help='Model to use (baseline_model, xgboost_model, lightgbm_model)')
     parser.add_argument('--config', type=str, default='config.yaml', 
                        help='Path to configuration file')
+    parser.add_argument('--api-key', type=str, default=None,
+                       help='The Odds API key (or set ODDS_API_KEY env variable)')
     
     args = parser.parse_args()
     
     # If no arguments, show help
-    if not any([args.download, args.train, args.backtest, args.predict, args.all]):
+    if not any([args.download, args.train, args.backtest, args.predict, args.fetch_odds, args.all]):
         parser.print_help()
         return
     
@@ -243,6 +287,9 @@ def main():
             
             if args.backtest:
                 run_backtest(args.config, args.model)
+            
+            if args.fetch_odds:
+                fetch_live_odds(args.config, args.api_key)
             
             if args.predict:
                 predict_fixtures(args.config, args.model)
