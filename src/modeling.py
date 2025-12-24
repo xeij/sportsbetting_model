@@ -34,30 +34,25 @@ def get_feature_columns(df: pd.DataFrame) -> List[str]:
     Returns:
         List of feature column names
     """
-    # Exclude non-feature columns
-    exclude_cols = [
-        'Date', 'HomeTeam', 'AwayTeam', 'HomeTeam_Original', 'AwayTeam_Original',
-        'FTHG', 'FTAG', 'FTR', 'HTHG', 'HTAG', 'HTR', 'Result',
-        'Division', 'Season', 'Referee'
+    # Only include engineered features, not raw data columns
+    feature_prefixes = [
+        'home_form_', 'away_form_',  # Form features
+        'h2h_',  # Head-to-head features
+        'home_rest_days', 'away_rest_days',  # Rest days
+        'home_goal_diff', 'away_goal_diff',  # Goal difference
     ]
     
-    # Also exclude odds columns (we use derived features instead)
-    exclude_prefixes = ['B365', 'BW', 'IW', 'PS', 'WH', 'VC', 'Avg', 'Max']
+    # Also include odds-derived features
+    odds_features = ['prob', 'overround', 'true']
     
     feature_cols = []
     for col in df.columns:
-        # Skip if in exclude list
-        if col in exclude_cols:
-            continue
-        
-        # Skip if starts with bookmaker prefix (unless it's a derived feature)
-        is_odds_col = any(col.startswith(prefix) for prefix in exclude_prefixes)
-        is_derived = any(x in col for x in ['prob', 'overround', 'true'])
-        
-        if is_odds_col and not is_derived:
-            continue
-        
-        feature_cols.append(col)
+        # Include if it starts with any feature prefix
+        if any(col.startswith(prefix) for prefix in feature_prefixes):
+            feature_cols.append(col)
+        # Or if it's an odds-derived feature
+        elif any(x in col for x in odds_features):
+            feature_cols.append(col)
     
     return feature_cols
 
