@@ -14,6 +14,7 @@ Usage:
 import argparse
 import sys
 import os
+import pandas as pd
 
 from src.utils import load_config, print_progress
 from src.data_loader import download_all_data, merge_data, load_processed_data
