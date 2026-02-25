@@ -206,10 +206,18 @@ def standardize_team_name(team: str) -> str:
 def print_progress(message: str, level: str = "INFO") -> None:
     """
     Print formatted progress message.
-    
+
     Args:
         message: Message to print
         level: Log level (INFO, WARNING, ERROR)
     """
     prefix = f"[{level}]"
-    print(f"{prefix} {message}")
+    output_line = f"{prefix} {message}"
+
+    # Always print to console
+    print(output_line)
+
+    # Also add to web capture if available
+    import sys
+    if hasattr(sys, '_gradio_capture') and sys._gradio_capture:
+        sys._gradio_capture.add_line(output_line)

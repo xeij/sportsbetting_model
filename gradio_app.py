@@ -1,7 +1,7 @@
 """
-Gradio Web Interface for Football Betting Model
+Gradio Web Interface for Football Betting Model - Fixed Version
 
-A modern web interface that replicates the tkinter GUI functionality.
+A modern web interface with working real-time output streaming.
 """
 
 import gradio as gr
@@ -11,105 +11,117 @@ import io
 import traceback
 import threading
 import time
-import queue
 from contextlib import redirect_stdout, redirect_stderr
 
 # Import main functions
 from main import download_data, train_models, run_backtest, fetch_live_odds, predict_fixtures
 
 
-class StreamingOutput:
-    """Real-time output streaming for Gradio."""
+class RealTimeOutput:
+    """Simple but effective real-time output capture."""
 
     def __init__(self):
-        self.output_queue = queue.Queue()
-        self.current_output = ""
+        self.output_lines = []
         self.is_running = False
 
-    def write(self, text):
-        """Write method for stdout redirection."""
-        if text and text.strip():
-            self.output_queue.put(text)
+    def clear(self):
+        """Clear output."""
+        self.output_lines = []
 
-    def flush(self):
-        """Flush method for stdout redirection."""
-        pass
+    def add_line(self, line):
+        """Add a line of output."""
+        self.output_lines.append(line)
 
-    def get_current_output(self):
-        """Get all current output."""
-        while not self.output_queue.empty():
-            try:
-                text = self.output_queue.get_nowait()
-                self.current_output += text
-            except queue.Empty:
-                break
-        return self.current_output
+    def get_output(self):
+        """Get current output as string."""
+        return "\n".join(self.output_lines)
 
-    def clear_output(self):
-        """Clear the current output."""
-        self.current_output = ""
-        while not self.output_queue.empty():
-            try:
-                self.output_queue.get_nowait()
-            except queue.Empty:
-                break
-
-    def run_with_streaming(self, func, *args, **kwargs):
-        """Run a function with real-time output streaming."""
-        self.clear_output()
+    def run_function(self, func, *args, **kwargs):
+        """Run function with output capture."""
+        self.clear()
         self.is_running = True
 
         def worker():
             try:
-                # Redirect stdout to our streaming output
-                original_stdout = sys.stdout
-                sys.stdout = self
+                # Set up web capture globally so print_progress can find it
+                import sys
+                sys._gradio_capture = self
 
-                # Run the function
+                # Also capture regular print statements
+                original_print = print
+
+                def capture_print(*args, **kwargs):
+                    """Capture regular print calls."""
+                    # Convert to string
+                    output = " ".join(str(arg) for arg in args)
+                    if output.strip():  # Only capture non-empty lines
+                        self.add_line(output)
+                    # Also call original
+                    original_print(*args, **kwargs)
+
+                # Replace print temporarily
+                import builtins
+                builtins.print = capture_print
+
+                # Run the main function
                 result = func(*args, **kwargs)
 
-                # Restore stdout
-                sys.stdout = original_stdout
+                # Restore original functions
+                builtins.print = original_print
 
-                # Mark as complete
-                self.output_queue.put("\n" + "=" * 80 + "\n")
-                self.output_queue.put("OPERATION COMPLETE\n")
-                self.output_queue.put("=" * 80 + "\n")
+                # Add completion message
+                self.add_line("")
+                self.add_line("=" * 80)
+                self.add_line("OPERATION COMPLETE")
+                self.add_line("=" * 80)
 
             except Exception as e:
-                # Restore stdout
-                sys.stdout = original_stdout
-                error_msg = f"\n[ERROR] {str(e)}\n{traceback.format_exc()}"
-                self.output_queue.put(error_msg)
+                # Restore functions
+                if 'original_print' in locals():
+                    builtins.print = original_print
+
+                # Clear web capture
+                import sys
+                if hasattr(sys, '_gradio_capture'):
+                    delattr(sys, '_gradio_capture')
+
+                # Add error message
+                self.add_line("")
+                self.add_line(f"[ERROR] {str(e)}")
+                self.add_line("")
+                self.add_line(traceback.format_exc())
+
             finally:
+                # Clear web capture
+                import sys
+                if hasattr(sys, '_gradio_capture'):
+                    delattr(sys, '_gradio_capture')
                 self.is_running = False
 
-        # Start the worker thread
+        # Start worker thread
         thread = threading.Thread(target=worker, daemon=True)
         thread.start()
 
-        return thread
-
-# Global streaming output
-streaming_output = StreamingOutput()
+# Global output capture
+output_capture = RealTimeOutput()
 
 
 def download_data_action():
     """Download historical data with streaming output."""
-    streaming_output.run_with_streaming(download_data)
-    return streaming_output.get_current_output(), "🔄 Processing..."
+    output_capture.run_function(download_data)
+    return output_capture.get_output(), "🔄 Processing..."
 
 
 def train_models_action():
     """Train models with streaming output."""
-    streaming_output.run_with_streaming(train_models)
-    return streaming_output.get_current_output(), "🔄 Processing..."
+    output_capture.run_function(train_models)
+    return output_capture.get_output(), "🔄 Processing..."
 
 
 def run_backtest_action():
     """Run backtesting with streaming output."""
-    streaming_output.run_with_streaming(run_backtest)
-    return streaming_output.get_current_output(), "🔄 Processing..."
+    output_capture.run_function(run_backtest)
+    return output_capture.get_output(), "🔄 Processing..."
 
 
 def fetch_odds_action(api_key):
@@ -123,23 +135,28 @@ Get a free key at: https://the-odds-api.com/
         """
         return error_msg, "✗ API Key Required"
 
-    streaming_output.run_with_streaming(fetch_live_odds, api_key=api_key.strip())
-    return streaming_output.get_current_output(), "🔄 Processing..."
+    output_capture.run_function(fetch_live_odds, api_key=api_key.strip())
+    return output_capture.get_output(), "🔄 Processing..."
 
 
 def predict_action():
     """Make predictions with streaming output."""
-    streaming_output.run_with_streaming(predict_fixtures)
-    return streaming_output.get_current_output(), "🔄 Processing..."
+    output_capture.run_function(predict_fixtures)
+    return output_capture.get_output(), "🔄 Processing..."
 
 
 def update_output():
     """Update the output display with latest content."""
-    current_output = streaming_output.get_current_output()
-    if streaming_output.is_running:
+    current_output = output_capture.get_output()
+    if output_capture.is_running:
         status = "🔄 Processing..."
     else:
-        status = "✓ Complete" if current_output and not "[ERROR]" in current_output else "Ready"
+        if current_output and "[ERROR]" in current_output:
+            status = "✗ Error"
+        elif current_output and "OPERATION COMPLETE" in current_output:
+            status = "✓ Complete"
+        else:
+            status = "Ready"
 
     return current_output, status
 
@@ -394,7 +411,7 @@ def create_interface():
             """Update output and stop timer if operation is complete."""
             output, status = update_output()
             # Stop the timer if operation is complete
-            if not streaming_output.is_running:
+            if not output_capture.is_running:
                 refresh_timer.active = False
             return output, status
 
