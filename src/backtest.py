@@ -41,6 +41,7 @@ def simulate_betting(model, X_test: pd.DataFrame, y_test: pd.Series,
     min_odds = config['backtest']['min_odds']
     max_odds = config['backtest']['max_odds']
     vig_method = config['backtest']['vig_method']
+    allowed_outcomes = config['backtest'].get('allowed_outcomes', ['home_win', 'draw', 'away_win'])
     
     print_progress("Simulating betting strategy...")
     
@@ -77,10 +78,11 @@ def simulate_betting(model, X_test: pd.DataFrame, y_test: pd.Series,
         # Identify value bets
         value_bets = identify_value_bets(model_probs, market_odds, value_threshold, vig_method)
         
-        # Filter by odds range
+        # Filter by odds range and allowed outcomes
         value_bets = [
-            bet for bet in value_bets 
+            bet for bet in value_bets
             if min_odds <= bet['odds'] <= max_odds
+            and bet['outcome'] in allowed_outcomes
         ]
         
         if not value_bets:

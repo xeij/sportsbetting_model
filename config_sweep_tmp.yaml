@@ -1,0 +1,63 @@
+backtest:
+  kelly_fraction: 0.1
+  max_odds: 7.0
+  min_odds: 1.5
+  starting_bankroll: 1000.0
+  value_threshold: 0.1
+  vig_method: margin
+data:
+  base_url: https://www.football-data.co.uk/mmz4281
+  divisions:
+  - E0
+  - E2
+  - E3
+  - EC
+  processed_data_path: data/processed/all_matches.csv
+  raw_data_dir: data/raw
+  seasons:
+  - '2223'
+  - '2324'
+  - '2425'
+  - '2526'
+features:
+  form_windows:
+  - 5
+  - 10
+  h2h_lookback: 5
+  min_matches_for_stats: 3
+models:
+  lightgbm:
+    colsample_bytree: 0.8
+    learning_rate: 0.03
+    max_depth: 8
+    min_child_samples: 20
+    n_estimators: 300
+    reg_alpha: 0.1
+    reg_lambda: 1.0
+    subsample: 0.8
+  model_save_dir: models
+  random_state: 42
+  test_size: 0.15
+  xgboost:
+    colsample_bytree: 0.8
+    gamma: 0.1
+    learning_rate: 0.03
+    max_depth: 8
+    min_child_weight: 3
+    n_estimators: 300
+    reg_alpha: 0.1
+    reg_lambda: 1.0
+    subsample: 0.8
+prediction:
+  bookmakers:
+  - PS
+  - B365
+  - Avg
+  min_model_prob: 0.15
+visualization:
+  dpi: 100
+  figure_size:
+  - 12
+  - 8
+  save_dir: data/visualizations
+  style: seaborn-v0_8-darkgrid
