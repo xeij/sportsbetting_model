@@ -121,7 +121,6 @@ def train_baseline(X_train: pd.DataFrame, y_train: pd.Series) -> LogisticRegress
         max_iter=1000,
         class_weight='balanced',
         random_state=42,
-        multi_class='multinomial',
         solver='lbfgs'
     )
     

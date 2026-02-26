@@ -15,30 +15,42 @@ import time
 from .utils import load_config, print_progress, standardize_team_name
 
 
-def download_season_data(season: str, division: str, base_url: str, 
+def _current_season_code() -> str:
+    """Return the season code (e.g. '2526') for the currently running season."""
+    from datetime import datetime
+    now = datetime.now()
+    year = now.year
+    # Football seasons start in July/August
+    if now.month >= 7:
+        return f"{str(year)[2:]}{str(year + 1)[2:]}"
+    return f"{str(year - 1)[2:]}{str(year)[2:]}"
+
+
+def download_season_data(season: str, division: str, base_url: str,
                          output_dir: str, retries: int = 3) -> Optional[str]:
     """
     Download CSV data for a specific season and division.
-    
+
     Args:
         season: Season code (e.g., '2425' for 2024/25)
         division: Division code (e.g., 'E2' for League One)
         base_url: Base URL for data source
         output_dir: Directory to save downloaded files
         retries: Number of retry attempts
-        
+
     Returns:
         Path to downloaded file, or None if download failed
     """
     url = f"{base_url}/{season}/{division}.csv"
     output_path = os.path.join(output_dir, f"{division}_{season}.csv")
-    
+
     # Create output directory if it doesn't exist
     Path(output_dir).mkdir(parents=True, exist_ok=True)
-    
-    # Check if file already exists
-    if os.path.exists(output_path):
-        print_progress(f"File already exists: {output_path}")
+
+    # Skip re-downloading completed past seasons; always refresh the current season
+    is_current_season = (season == _current_season_code())
+    if os.path.exists(output_path) and not is_current_season:
+        print_progress(f"File already exists (past season): {output_path}")
         return output_path
     
     # Download with retries
